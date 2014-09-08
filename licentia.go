@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -20,8 +21,10 @@ func main() {
 	usage := `Licentia.
 
 Usage:
-  licentia set <type> <owner> <glob-pattern> <eol-comment-style>
-  licentia detect <glob-pattern>
+  licentia set <type> <owner> <files> <eol-comment-style>
+  licentia unset <type> <owner> <files> <eol-comment-style>
+  licentia detect <files>
+  licentia dump <type> <owner>
   licentia list
   licentia -h | --help
   licentia --version
@@ -34,10 +37,17 @@ Supported license types:
 * newbsd    * freebsd
 * lgpl3     * lgpl2
 
+Actions:
+  set                Sets a license header to the specified files
+  unset              Removes license header from the specified files
+  detect             Detects license type for the specified files
+  dump               Dumps to stdout a given license using the specified owner and the current year
+  list               List supported licenses
+
 Arguments:
   type               License type to set. Ex: apache2, mpl2, mit, newbsd, lgpl3
   owner              Copyright owner. Ex: "YourCompany Inc"
-  glob-pattern       Source files to set the license header. It supports globbing patterns. Ex: *.go
+  files              Source files to set the license header. It supports globbing patterns, individual files or folders. Ex: *.go
   eol-comment-style  End-of-line comment style. Ex: #, ;, //, --, ', etc.
 
 Options:
@@ -50,21 +60,35 @@ Options:
 	}
 
 	if val, ok := args["set"]; ok && val.(bool) {
-		config := &Config{}
-		config.LicenseType = LicenseType(args["<type>"].(string))
-		config.CopyrightOwner = args["<owner>"].(string)
-		config.EOFCommentStyle = args["<eol-comment-style>"].(string)
-		config.GlobPattern = args["<glob-pattern>"].(string)
-
+		config := &Config{
+			LicenseType:     LicenseType(args["<type>"].(string)),
+			CopyrightOwner:  args["<owner>"].(string),
+			EOLCommentStyle: args["<eol-comment-style>"].(string),
+			Files:           args["<files>"].(string),
+		}
 		err = Set(config)
+	}
+
+	if val, ok := args["unset"]; ok && val.(bool) {
+		config := &Config{
+			LicenseType:     LicenseType(args["<type>"].(string)),
+			CopyrightOwner:  args["<owner>"].(string),
+			EOLCommentStyle: args["<eol-comment-style>"].(string),
+			Files:           args["<files>"].(string),
+		}
+		err = Unset(config)
 	}
 
 	if val, ok := args["list"]; ok && val.(bool) {
 		err = List()
 	}
 
+	if val, ok := args["dump"]; ok && val.(bool) {
+		err = Dump(LicenseType(args["<type>"].(string)), args["<owner>"].(string))
+	}
+
 	if val, ok := args["detect"]; ok && val.(bool) {
-		//err = Detect(args["<glob-pattern>"])
+		//err = Detect(args["<files>"].(string))
 	}
 
 	if err != nil {
@@ -76,15 +100,15 @@ Options:
 type LicenseType string
 
 const (
-	Apache2 LicenseType = "apache-2.0"
+	Apache2 LicenseType = "apache2"
 	Freebsd LicenseType = "freebsd"
-	LGPL3   LicenseType = "lgpl-3.0"
-	LGPL2   LicenseType = "lgpl-2.0"
+	LGPL3   LicenseType = "lgpl3"
+	LGPL2   LicenseType = "lgpl2"
 	MIT     LicenseType = "mit"
-	MPL2    LicenseType = "mpl-2.0"
+	MPL2    LicenseType = "mpl2"
 	NewBSD  LicenseType = "newbsd"
-	GPL3    LicenseType = "gpl-3.0"
-	GPL2    LicenseType = "gpl-2.0"
+	GPL3    LicenseType = "gpl3"
+	GPL2    LicenseType = "gpl2"
 	CDDL    LicenseType = "cddl"
 	EPL     LicenseType = "epl"
 	UNKNOWN LicenseType = "unknown"
@@ -95,44 +119,55 @@ type Config struct {
 	CopyrightOwner string
 	// License type
 	LicenseType LicenseType
-	// Glob pattern for the set of files where the license header is going to
-	// be inserted, if it is really required or suggested by the license.
-	GlobPattern string
+	// Invidiviual file or folder as well as glob patterns are recognized
+	Files string
 	// Style of end-of-line comment that will be used to insert the license.
 	// Ex: //, #, --, !, ', ;
-	EOFCommentStyle string
+	EOLCommentStyle string
 }
 
-// Sets license based on configuration
+// Dumps license to stdout setting the owner and year in the copyright notice
+func Dump(ltype LicenseType, owner string) error {
+	replacer := strings.NewReplacer("@@owner@@", owner, "@@year@@", strconv.Itoa(time.Now().Year()))
+	data, err := Asset(filepath.Join("licenses", string(ltype)))
+	if err != nil {
+		return err
+	}
+
+	lcopyright, err := Asset(filepath.Join("licenses", string(ltype)+".copyright"))
+	data = append(lcopyright, data...)
+
+	license := replacer.Replace(string(data))
+	fmt.Println(license)
+	return nil
+}
+
+// Sets license
 func Set(config *Config) error {
-	files, err := filepath.Glob(config.GlobPattern)
+	files, err := filepath.Glob(config.Files)
 	if err != nil {
 		return err
 	}
 
 	// If a specific file was provided use it
 	if len(files) == 0 {
-		files = append(files, config.GlobPattern)
+		// if folder
+		files = append(files, config.Files)
 	}
 
 	errors := new(Error)
 
 	var wg sync.WaitGroup
+	replacer := strings.NewReplacer("@@owner@@", config.CopyrightOwner, "@@year@@", strconv.Itoa(time.Now().Year()))
+
 	for _, file := range files {
 		wg.Add(1)
 		go func(file string) {
 			defer wg.Done()
-			// Detect first if the file has already a license
-			ltype, err := Detect(file)
+
+			err = insertLicense(file, replacer, config)
 			if err != nil {
 				errors.Append(err)
-			}
-
-			if ltype == UNKNOWN {
-				err = insert(file, config)
-				if err != nil {
-					errors.Append(err)
-				}
 			}
 		}(file)
 	}
@@ -145,31 +180,144 @@ func Set(config *Config) error {
 	return errors
 }
 
-func insert(filename string, config *Config) error {
-	lheader, err := Asset(filepath.Join("licenses", string(config.LicenseType)+"-header"))
+// Removes license
+func Unset(config *Config) error {
+	files, err := filepath.Glob(config.Files)
 	if err != nil {
 		return err
 	}
 
-	if len(lheader) == 0 {
-		// License does not require to insert a header
+	// If a specific file was provided use it
+	if len(files) == 0 {
+		// if folder
+		files = append(files, config.Files)
+	}
+
+	errors := new(Error)
+
+	var wg sync.WaitGroup
+	for _, file := range files {
+		wg.Add(1)
+		go func(file string) {
+			defer wg.Done()
+
+			err = removeLicense(file, config)
+			if err != nil {
+				errors.Append(err)
+			}
+		}(file)
+	}
+	wg.Wait()
+
+	if errors.IsEmpty() {
 		return nil
 	}
 
-	buffer := bytes.NewBuffer(lheader)
-	scanner := bufio.NewScanner(buffer)
+	return errors
+}
+
+// func RemoveLicenses(file string, config *Config) error {
+// 	finfo, err := os.Stat(file)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	files := []string{
+// 		"LICENSE",
+// 		"LICENSE.txt",
+// 		"LICENSE.md",
+// 		"COPYING",
+// 		"COPYING.txt",
+// 		"COPYING.md",
+// 	}
+
+// 	if finfo.IsDir() {
+// 		var err error
+// 		for _, f := range files {
+// 			err = os.Remove(f)
+// 			if err != nil {
+// 				fmt.Printf("! %s\n", err)
+// 			}
+
+// 			err = os.Remove(strings.ToLower(f))
+// 			if err != nil {
+// 				fmt.Printf("! %s\n", err)
+// 			}
+// 		}
+// 		return nil
+// 	}
+
+// 	// Stripping a license from a source file
+// 	licenses, err := AssetDir("licenses")
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	sourceFile, err := ioutil.ReadFile(file)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	replacer := strings.NewReplacer("@@owner@@", config.CopyrightOwner, "@@year@@", string(time.Now().Year()))
+
+// 	data := string(sourceFile)
+// 	for _, license := range licenses {
+// 		if !strings.HasSuffix(license, "header") {
+// 			continue
+// 		}
+
+// 		license = replacer.Replace(license)
+
+// 		data = strings.Trim(data, license)
+// 	}
+
+// 	return ioutil.WriteFile(file, []byte(data), 0640)
+// }
+
+// Removes license header from file represented by filename
+func removeLicense(filename string, config *Config) error {
+	lbuffer := bytes.NewBuffer(nil)
+	lheader, err := Asset(filepath.Join("licenses", string(config.LicenseType)+".header"))
+	if err != nil {
+		// This license does require a license header in the source file.
+		// Do not remove anything
+		return nil
+	}
+
+	err = prependEOLComment(lbuffer, config, lheader)
+	if err != nil {
+		return err
+	}
+
+	license := lbuffer.String()
+
+	licensedFile, err := ioutil.ReadFile(filename)
+	licensedData := string(licensedFile)
+
+	unlicensedData := strings.Replace(licensedData, license, "", -1)
+
+	return ioutil.WriteFile(filename, []byte(unlicensedData), 0640)
+}
+
+// Inserts license header to file represented by filename
+func insertLicense(filename string, replacer *strings.Replacer, config *Config) error {
 	licensedFile := bytes.NewBuffer(nil)
 
-	for scanner.Scan() {
-		line := scanner.Text()
-		_, err := licensedFile.WriteString(config.EOFCommentStyle + " " + line + "\n")
+	lcopyright, err := Asset(filepath.Join("licenses", string(config.LicenseType)+".copyright"))
+
+	if err == nil {
+		err = prependEOLComment(licensedFile, config, lcopyright)
 		if err != nil {
 			return err
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("Scanner error: %v", err)
+	lheader, err := Asset(filepath.Join("licenses", string(config.LicenseType)+".header"))
+	if err == nil {
+		err := prependEOLComment(licensedFile, config, lheader)
+		if err != nil {
+			return err
+		}
 	}
 
 	data, err := ioutil.ReadFile(filename)
@@ -178,11 +326,33 @@ func insert(filename string, config *Config) error {
 		return err
 	}
 
-	r := strings.NewReplacer("@@owner@@", config.CopyrightOwner, "@@year@@", string(time.Now().Year()))
-
-	filedata := r.Replace(licensedFile.String())
+	filedata := replacer.Replace(licensedFile.String())
 
 	return ioutil.WriteFile(filename, []byte(filedata), 0640)
+}
+
+// Prepends end-of-line comment to newdata and returns it in licensedFile
+func prependEOLComment(licensedFile *bytes.Buffer, config *Config, newdata []byte) error {
+	if len(newdata) == 0 {
+		return nil
+	}
+
+	buffer := bytes.NewBuffer(newdata)
+	scanner := bufio.NewScanner(buffer)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		eol := strings.TrimSpace(config.EOLCommentStyle + " " + line)
+		_, err := licensedFile.WriteString(eol + "\n")
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("Scanner error: %v", err)
+	}
+	return nil
 }
 
 // List supported license types
@@ -193,7 +363,7 @@ func List() error {
 	}
 
 	for _, l := range licenses {
-		if strings.Contains(l, "header") {
+		if strings.HasSuffix(l, "header") || strings.HasSuffix(l, "copyright") {
 			continue
 		}
 		fmt.Println("* " + l)
@@ -201,7 +371,7 @@ func List() error {
 	return nil
 }
 
-// Makes best effort to detect license using naive bayessian classifier
+// TODO(c4milo): Use go-license
 func Detect(filepath string) (LicenseType, error) {
 	return UNKNOWN, nil
 }

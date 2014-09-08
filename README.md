@@ -1,6 +1,15 @@
 # Licentia
-Helps you set most popular OSI approved licenses in your open source projects. This package does not intent
-to provide legal advice.
+Helps you manage the open source licenses of your projects quickly and effortlessly.
+
+### Features
+Licentia allows you to:
+
+* Easily manage your opensource licenses across several files
+* Update the year of your copyright notice across several files
+* Change the license of a subset of files by using glob patterns
+
+### Installation
+`go get github.com/c4milo/licentia`
 
 ### Usage
 
@@ -8,8 +17,10 @@ to provide legal advice.
 Licentia.
 
 Usage:
-  licentia set <type> Cloudescape <glob-pattern> <eol-comment-style>
-  licentia detect <glob-pattern>
+  licentia set <type> <owner> <files> <eol-comment-style>
+  licentia unset <type> <owner> <files> <eol-comment-style>
+  licentia detect <files>
+  licentia dump <type> <owner>
   licentia list
   licentia -h | --help
   licentia --version
@@ -22,10 +33,17 @@ Supported license types:
 * newbsd    * freebsd
 * lgpl3     * lgpl2
 
+Actions:
+  set                Sets a license header to the specified files
+  unset              Removes license header from the specified files
+  detect             Detects license type for the specified files
+  dump               Dumps to stdout a given license using the specified owner and the current year
+  list               List supported licenses
+
 Arguments:
   type               License type to set. Ex: apache2, mpl2, mit, newbsd, lgpl3
   owner              Copyright owner. Ex: "YourCompany Inc"
-  glob-pattern       Source files to set the license header. It supports globbing patterns. Ex: *.go
+  files              Source files to set the license header. It supports globbing patterns, individual files or folders. Ex: *.go
   eol-comment-style  End-of-line comment style. Ex: #, ;, //, --, ', etc.
 
 Options:
