@@ -20,7 +20,7 @@ func main() {
 	usage := `Licentia.
 
 Usage:
-  licentia set <type> Cloudescape <glob-pattern> <eol-comment-style>
+  licentia set <type> <owner> <glob-pattern> <eol-comment-style>
   licentia detect <glob-pattern>
   licentia list
   licentia -h | --help
@@ -52,7 +52,7 @@ Options:
 	if val, ok := args["set"]; ok && val.(bool) {
 		config := &Config{}
 		config.LicenseType = LicenseType(args["<type>"].(string))
-		config.CopyrightOwner = args["Cloudescape"].(string)
+		config.CopyrightOwner = args["<owner>"].(string)
 		config.EOFCommentStyle = args["<eol-comment-style>"].(string)
 		config.GlobPattern = args["<glob-pattern>"].(string)
 
@@ -178,7 +178,7 @@ func insert(filename string, config *Config) error {
 		return err
 	}
 
-	r := strings.NewReplacer("<owner>", config.CopyrightOwner, "<year>", string(time.Now().Year()))
+	r := strings.NewReplacer("@@owner@@", config.CopyrightOwner, "@@year@@", string(time.Now().Year()))
 
 	filedata := r.Replace(licensedFile.String())
 
