@@ -8,7 +8,7 @@ to provide legal advice.
 Licentia.
 
 Usage:
-  licentia set <type> <owner> <glob-pattern> <eol-comment-style>
+  licentia set <type> Cloudescape <glob-pattern> <eol-comment-style>
   licentia detect <glob-pattern>
   licentia list
   licentia -h | --help
@@ -23,9 +23,10 @@ Sets a license to your source code. Supported license types are:
 * lgpl3     * lgpl2
 
 Arguments:
-  owner         Copyright owner. Ex: "YourCompany Inc"
-  type          License type to set. Ex: apache2, mpl2, mit, newbsd, lgpl3
-  files         Source files to set the license header. It supports globbing patterns. Ex: *.go
+  type               License type to set. Ex: apache2, mpl2, mit, newbsd, lgpl3
+  owner              Copyright owner. Ex: "YourCompany Inc"
+  glob-pattern       Source files to set the license header. It supports globbing patterns. Ex: *.go
+  eol-comment-style  End-of-line comment style. Ex: #, ;, //, --, ', etc.
 
 Options:
   -h --help     Show this screen.
