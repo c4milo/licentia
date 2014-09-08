@@ -14,7 +14,7 @@ Usage:
   licentia -h | --help
   licentia --version
 
-Sets a license to your source code. Supported license types are:
+Supported license types:
 
 * apache2   * gpl3       * gpl2
 * mpl2      * cddl
