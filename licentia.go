@@ -26,7 +26,7 @@ Usage:
   licentia -h | --help
   licentia --version
 
-Sets a license to your source code. Supported license types are:
+Supported license types:
 
 * apache2   * gpl3       * gpl2
 * mpl2      * cddl
@@ -178,7 +178,7 @@ func insert(filename string, config *Config) error {
 		return err
 	}
 
-	r := strings.NewReplacer("Cloudescape", config.CopyrightOwner, "ߞ", string(time.Now().Year()))
+	r := strings.NewReplacer("<owner>", config.CopyrightOwner, "<year>", string(time.Now().Year()))
 
 	filedata := r.Replace(licensedFile.String())
 
@@ -201,7 +201,7 @@ func List() error {
 	return nil
 }
 
-// Makes best effort to detect license using bayessian classifier
+// Makes best effort to detect license using naive bayessian classifier
 func Detect(filepath string) (LicenseType, error) {
 	return UNKNOWN, nil
 }
