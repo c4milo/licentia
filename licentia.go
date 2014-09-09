@@ -292,9 +292,28 @@ func removeLicense(filename string, config *Config) error {
 	license := lbuffer.String()
 
 	licensedFile, err := ioutil.ReadFile(filename)
-	licensedData := string(licensedFile)
+	buf := bytes.NewBuffer(licensedFile)
+	unlincesedFile := bytes.NewBuffer(nil)
 
-	unlicensedData := strings.Replace(licensedData, license, "", -1)
+	scanner := bufio.NewScanner(buf)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "// Copyright") {
+			continue
+		}
+		_, err := unlincesedFile.WriteString(line + "\n")
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("Scanner error: %v", err)
+	}
+
+	unlicensedData := unlincesedFile.String()
+
+	unlicensedData = strings.Replace(unlicensedData, license, "", -1)
 
 	return ioutil.WriteFile(filename, []byte(unlicensedData), 0640)
 }

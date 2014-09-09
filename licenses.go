@@ -1638,35 +1638,35 @@ type _bintree_t struct {
 }
 var _bintree = &_bintree_t{nil, map[string]*_bintree_t{
 	"licenses": &_bintree_t{nil, map[string]*_bintree_t{
-		"apache2": &_bintree_t{licenses_apache2, map[string]*_bintree_t{
-		}},
-		"freebsd.header": &_bintree_t{licenses_freebsd_header, map[string]*_bintree_t{
+		"mit": &_bintree_t{licenses_mit, map[string]*_bintree_t{
 		}},
 		"mit.copyright": &_bintree_t{licenses_mit_copyright, map[string]*_bintree_t{
+		}},
+		"mpl2.header": &_bintree_t{licenses_mpl2_header, map[string]*_bintree_t{
+		}},
+		"newbsd.copyright": &_bintree_t{licenses_newbsd_copyright, map[string]*_bintree_t{
+		}},
+		"apache2.copyright": &_bintree_t{licenses_apache2_copyright, map[string]*_bintree_t{
+		}},
+		"freebsd.copyright": &_bintree_t{licenses_freebsd_copyright, map[string]*_bintree_t{
+		}},
+		"lgpl3": &_bintree_t{licenses_lgpl3, map[string]*_bintree_t{
 		}},
 		"mit.header": &_bintree_t{licenses_mit_header, map[string]*_bintree_t{
 		}},
 		"mpl2": &_bintree_t{licenses_mpl2, map[string]*_bintree_t{
 		}},
-		"newbsd.copyright": &_bintree_t{licenses_newbsd_copyright, map[string]*_bintree_t{
-		}},
-		"newbsd.header": &_bintree_t{licenses_newbsd_header, map[string]*_bintree_t{
-		}},
 		"apache2.header": &_bintree_t{licenses_apache2_header, map[string]*_bintree_t{
-		}},
-		"lgpl3": &_bintree_t{licenses_lgpl3, map[string]*_bintree_t{
-		}},
-		"mpl2.header": &_bintree_t{licenses_mpl2_header, map[string]*_bintree_t{
-		}},
-		"freebsd.copyright": &_bintree_t{licenses_freebsd_copyright, map[string]*_bintree_t{
-		}},
-		"mit": &_bintree_t{licenses_mit, map[string]*_bintree_t{
 		}},
 		"newbsd": &_bintree_t{licenses_newbsd, map[string]*_bintree_t{
 		}},
-		"apache2.copyright": &_bintree_t{licenses_apache2_copyright, map[string]*_bintree_t{
+		"apache2": &_bintree_t{licenses_apache2, map[string]*_bintree_t{
 		}},
 		"freebsd": &_bintree_t{licenses_freebsd, map[string]*_bintree_t{
+		}},
+		"freebsd.header": &_bintree_t{licenses_freebsd_header, map[string]*_bintree_t{
+		}},
+		"newbsd.header": &_bintree_t{licenses_newbsd_header, map[string]*_bintree_t{
 		}},
 	}},
 }}
