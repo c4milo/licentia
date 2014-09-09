@@ -60,8 +60,8 @@ Only OSI approved licenses.
 * Mozilla Public License 2.0
 * MIT License
 * GNU General Public License (GPL)
-* GNU Library or "Lesser" General Public License (LGPL)
 <img src="http://opensource.org/trademarks/opensource/OSI-Approved-License-100x137.png" align="right"/>
+* GNU Library or "Lesser" General Public License (LGPL)
 * BSD 2-Clause "Simplified" or "FreeBSD" license
 * BSD 3-Clause "New" or "Revised" license
 * Common Development and Distribution License
