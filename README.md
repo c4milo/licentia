@@ -66,4 +66,4 @@ Only OSI approved licenses.
 * Common Development and Distribution License
 * Eclipse Public Licenses
 
-![](http://opensource.org/trademarks/opensource/OSI-Approved-License-100x137.png)
+<img src="http://opensource.org/trademarks/opensource/OSI-Approved-License-100x137.png" hspace="90%"/>
