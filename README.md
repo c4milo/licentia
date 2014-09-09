@@ -55,6 +55,7 @@ Options:
 ```
 
 ### Licenses supported
+Only OSI approved licenses.
 * Apache License 2.0
 * Mozilla Public License 2.0
 * MIT License
@@ -64,3 +65,5 @@ Options:
 * BSD 3-Clause "New" or "Revised" license
 * Common Development and Distribution License
 * Eclipse Public Licenses
+
+![](http://opensource.org/trademarks/opensource/OSI-Approved-License-100x137.png)
