@@ -80,11 +80,19 @@ Options:
 	}
 
 	if val, ok := args["list"]; ok && val.(bool) {
-		err = List()
+		var types []string
+		types, err = List()
+
+		fmt.Println("Supported licenses: ")
+		for _, t := range types {
+			fmt.Println("* " + t)
+		}
 	}
 
 	if val, ok := args["dump"]; ok && val.(bool) {
-		err = Dump(LicenseType(args["<type>"].(string)), args["<owner>"].(string))
+		var license string
+		license, err = Dump(LicenseType(args["<type>"].(string)), args["<owner>"].(string))
+		fmt.Println(license)
 	}
 
 	if val, ok := args["detect"]; ok && val.(bool) {
@@ -127,20 +135,17 @@ type Config struct {
 }
 
 // Dumps license to stdout setting the owner and year in the copyright notice
-func Dump(ltype LicenseType, owner string) error {
+func Dump(ltype LicenseType, owner string) (string, error) {
 	replacer := strings.NewReplacer("@@owner@@", owner, "@@year@@", strconv.Itoa(time.Now().Year()))
 	data, err := Asset(filepath.Join("licenses", string(ltype)))
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	lcopyright, err := Asset(filepath.Join("licenses", string(ltype)+".copyright"))
+	lcopyright, _ := Asset(filepath.Join("licenses", string(ltype)+".copyright"))
 	data = append(lcopyright, data...)
 
-	license := replacer.Replace(string(data))
-	fmt.Println(license)
-
-	return nil
+	return replacer.Replace(string(data)), nil
 }
 
 // Sets license
@@ -318,19 +323,20 @@ func prependEOLComment(licensedFile *bytes.Buffer, config *Config, newdata []byt
 }
 
 // List supported license types
-func List() error {
+func List() ([]string, error) {
 	licenses, err := AssetDir("licenses")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	types := make([]string, 0, len(licenses))
 	for _, l := range licenses {
 		if strings.HasSuffix(l, "header") || strings.HasSuffix(l, "copyright") {
 			continue
 		}
-		fmt.Println("* " + l)
+		types = append(types, l)
 	}
-	return nil
+	return types, nil
 }
 
 // TODO(c4milo): Use go-license
