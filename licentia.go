@@ -32,7 +32,7 @@ Usage:
 Supported license types:
 
 * apache2   * gpl3       * gpl2
-* mpl2      * cddl
+* mpl2      * cddl       * unlicense
 * mit       * epl
 * newbsd    * freebsd
 * lgpl3     * lgpl2
@@ -108,18 +108,19 @@ Options:
 type LicenseType string
 
 const (
-	Apache2 LicenseType = "apache2"
-	Freebsd LicenseType = "freebsd"
-	LGPL3   LicenseType = "lgpl3"
-	LGPL2   LicenseType = "lgpl2"
-	MIT     LicenseType = "mit"
-	MPL2    LicenseType = "mpl2"
-	NewBSD  LicenseType = "newbsd"
-	GPL3    LicenseType = "gpl3"
-	GPL2    LicenseType = "gpl2"
-	CDDL    LicenseType = "cddl"
-	EPL     LicenseType = "epl"
-	UNKNOWN LicenseType = "unknown"
+	Apache2   LicenseType = "apache2"
+	Freebsd   LicenseType = "freebsd"
+	LGPL3     LicenseType = "lgpl3"
+	LGPL2     LicenseType = "lgpl2"
+	MIT       LicenseType = "mit"
+	MPL2      LicenseType = "mpl2"
+	NewBSD    LicenseType = "newbsd"
+	GPL3      LicenseType = "gpl3"
+	GPL2      LicenseType = "gpl2"
+	CDDL      LicenseType = "cddl"
+	EPL       LicenseType = "epl"
+	UNLICENSE LicenseType = "unlicense"
+	UNKNOWN   LicenseType = "unknown"
 )
 
 type Config struct {
