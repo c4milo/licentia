@@ -139,6 +139,7 @@ func Dump(ltype LicenseType, owner string) error {
 
 	license := replacer.Replace(string(data))
 	fmt.Println(license)
+
 	return nil
 }
 
@@ -215,64 +216,6 @@ func Unset(config *Config) error {
 
 	return errors
 }
-
-// func RemoveLicenses(file string, config *Config) error {
-// 	finfo, err := os.Stat(file)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	files := []string{
-// 		"LICENSE",
-// 		"LICENSE.txt",
-// 		"LICENSE.md",
-// 		"COPYING",
-// 		"COPYING.txt",
-// 		"COPYING.md",
-// 	}
-
-// 	if finfo.IsDir() {
-// 		var err error
-// 		for _, f := range files {
-// 			err = os.Remove(f)
-// 			if err != nil {
-// 				fmt.Printf("! %s\n", err)
-// 			}
-
-// 			err = os.Remove(strings.ToLower(f))
-// 			if err != nil {
-// 				fmt.Printf("! %s\n", err)
-// 			}
-// 		}
-// 		return nil
-// 	}
-
-// 	// Stripping a license from a source file
-// 	licenses, err := AssetDir("licenses")
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	sourceFile, err := ioutil.ReadFile(file)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	replacer := strings.NewReplacer("@@owner@@", config.CopyrightOwner, "@@year@@", string(time.Now().Year()))
-
-// 	data := string(sourceFile)
-// 	for _, license := range licenses {
-// 		if !strings.HasSuffix(license, "header") {
-// 			continue
-// 		}
-
-// 		license = replacer.Replace(license)
-
-// 		data = strings.Trim(data, license)
-// 	}
-
-// 	return ioutil.WriteFile(file, []byte(data), 0640)
-// }
 
 // Removes license header from file represented by filename
 func removeLicense(filename string, config *Config) error {
