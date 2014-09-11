@@ -53,7 +53,7 @@ func TestSetUnset(t *testing.T) {
 func TestList(t *testing.T) {
 	types, err := List()
 	ok(t, err)
-	assert(t, len(types) == 11, "Number of supported licenses should be 11")
+	assert(t, len(types) == 12, "Number of supported licenses should be 12")
 }
 
 func TestDump(t *testing.T) {
