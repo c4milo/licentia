@@ -31,7 +31,7 @@ Usage:
 Supported license types:
 
 * apache2   * gpl3       * gpl2
-* mpl2      * cddl
+* mpl2      * cddl       * unlicense
 * mit       * epl
 * newbsd    * freebsd
 * lgpl3     * lgpl2
