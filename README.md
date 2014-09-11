@@ -55,7 +55,6 @@ Options:
 ```
 
 ### Licenses supported
-Only OSI approved licenses.
 * Apache License 2.0
 * Mozilla Public License 2.0
 * MIT License
