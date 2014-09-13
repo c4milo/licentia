@@ -156,12 +156,6 @@ func Set(config *Config) error {
 		return err
 	}
 
-	// If a specific file was provided use it
-	if len(files) == 0 {
-		// if folder
-		files = append(files, config.Files)
-	}
-
 	errors := new(Error)
 
 	var wg sync.WaitGroup
@@ -192,12 +186,6 @@ func Unset(config *Config) error {
 	files, err := filepath.Glob(config.Files)
 	if err != nil {
 		return err
-	}
-
-	// If a specific file was provided use it
-	if len(files) == 0 {
-		// if folder
-		files = append(files, config.Files)
 	}
 
 	errors := new(Error)
