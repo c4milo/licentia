@@ -46,7 +46,7 @@ Actions:
 Arguments:
   type               License type to set. Ex: apache2, mpl2, mit, newbsd, lgpl3
   owner              Copyright owner. Ex: "YourCompany Inc"
-  files              Source files to set the license header. It supports globbing patterns, individual files or folders. Ex: *.go
+  files              Source files to set the license header. It supports globbing patterns as well as specifying individual files. Ex: *.go, myfile.go, **/*.go
   eol-comment-style  End-of-line comment style. Ex: #, ;, //, --, ', etc.
 
 Options:
