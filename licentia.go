@@ -1,13 +1,16 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
+// License, version 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package main
 
 import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -15,6 +18,7 @@ import (
 	"time"
 
 	"github.com/docopt/docopt-go"
+	"github.com/ryanuber/go-license"
 )
 
 func main() {
@@ -96,7 +100,14 @@ Options:
 	}
 
 	if val, ok := args["detect"]; ok && val.(bool) {
-		//err = Detect(args["<files>"].(string))
+		config := &Config{
+			Files: args["<files>"].(string),
+		}
+		var types []fileLicense
+		types, err = Detect(config)
+		for _, elt := range types {
+			fmt.Printf("%s:\t%s\n", elt.file, elt.license)
+		}
 	}
 
 	if err != nil {
@@ -137,7 +148,7 @@ type Config struct {
 
 // Dumps license to stdout setting the owner and year in the copyright notice
 func Dump(ltype LicenseType, owner string) (string, error) {
-	replacer := strings.NewReplacer("@@owner@@", owner, "@@year@@", strconv.Itoa(time.Now().Year()))
+	replacer := strings.NewReplacer("The licentia Authors", owner, "2014", strconv.Itoa(time.Now().Year()))
 	data, err := Asset(filepath.Join("licenses", string(ltype)))
 	if err != nil {
 		return "", err
@@ -159,12 +170,23 @@ func Set(config *Config) error {
 	errors := new(Error)
 
 	var wg sync.WaitGroup
-	replacer := strings.NewReplacer("@@owner@@", config.CopyrightOwner, "@@year@@", strconv.Itoa(time.Now().Year()))
+	replacer := strings.NewReplacer("The licentia Authors", config.CopyrightOwner, "2014", strconv.Itoa(time.Now().Year()))
+
+	removeConfig := *config
 
 	for _, file := range files {
 		wg.Add(1)
 		go func(file string) {
 			defer wg.Done()
+
+			// Detect old license and remove before adding another one.
+			old, err := detectLicense(file)
+			if err == nil && old != UNKNOWN {
+				removeConfig.Files = file
+				if err = removeLicense(file, &removeConfig); err != nil {
+					errors.Append(fmt.Errorf("remove %q license from %q: %v", old, file, err))
+				}
+			}
 
 			err = insertLicense(file, replacer, config)
 			if err != nil {
@@ -230,15 +252,15 @@ func removeLicense(filename string, config *Config) error {
 
 	licensedFile, err := ioutil.ReadFile(filename)
 	buf := bytes.NewBuffer(licensedFile)
-	unlincesedFile := bytes.NewBuffer(nil)
+	unlicensedFile := bytes.NewBuffer(nil)
 
 	scanner := bufio.NewScanner(buf)
 	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "// Copyright") {
+		if bytes.HasPrefix(scanner.Bytes(), []byte("// Copyright")) {
 			continue
 		}
-		_, err := unlincesedFile.WriteString(line + "\n")
+		line := scanner.Text()
+		_, err := unlicensedFile.WriteString(line + "\n")
 		if err != nil {
 			return err
 		}
@@ -248,11 +270,16 @@ func removeLicense(filename string, config *Config) error {
 		return fmt.Errorf("Scanner error: %v", err)
 	}
 
-	unlicensedData := unlincesedFile.String()
+	unlicensedData := unlicensedFile.String()
 
 	unlicensedData = strings.Replace(unlicensedData, license, "", -1)
 
-	return ioutil.WriteFile(filename, []byte(unlicensedData), 0640)
+	mode := os.FileMode(0640)
+	fi, err := os.Stat(filename)
+	if err == nil {
+		mode = fi.Mode()
+	}
+	return ioutil.WriteFile(filename, []byte(unlicensedData), mode)
 }
 
 // Inserts license header to file represented by filename
@@ -276,9 +303,12 @@ func insertLicense(filename string, replacer *strings.Replacer, config *Config) 
 		}
 	}
 
-	data, err := ioutil.ReadFile(filename)
-	_, err = licensedFile.WriteString(string(data))
+	fh, err := os.Open(filename)
 	if err != nil {
+		return err
+	}
+	defer fh.Close()
+	if _, err = io.Copy(licensedFile, fh); err != nil {
 		return err
 	}
 
@@ -304,6 +334,8 @@ func prependEOLComment(licensedFile *bytes.Buffer, config *Config, newdata []byt
 			return err
 		}
 	}
+	// Extra newline for separating license code from package docs.
+	licensedFile.WriteByte('\n')
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("Scanner error: %v", err)
@@ -328,7 +360,97 @@ func List() ([]string, error) {
 	return types, nil
 }
 
-// TODO(c4milo): Use go-license
-func Detect(filepath string) (LicenseType, error) {
-	return UNKNOWN, nil
+type fileLicense struct {
+	file    string
+	license LicenseType
+}
+
+// Detect the licenses.
+func Detect(config *Config) ([]fileLicense, error) {
+	files, err := filepath.Glob(config.Files)
+	if err != nil {
+		return nil, err
+	}
+
+	var typesMtx sync.Mutex
+	types := make([]fileLicense, 0, len(files))
+	errors := new(Error)
+
+	var wg sync.WaitGroup
+	for _, file := range files {
+		wg.Add(1)
+		go func(file string) {
+			defer wg.Done()
+
+			lic, err := detectLicense(file)
+			typesMtx.Lock()
+			types = append(types, fileLicense{file: file, license: lic})
+			typesMtx.Unlock()
+			if err != nil {
+				errors.Append(err)
+			}
+		}(file)
+	}
+	wg.Wait()
+
+	if errors.IsEmpty() {
+		return types, nil
+	}
+
+	return types, errors
+}
+
+func detectLicense(filepath string) (LicenseType, error) {
+	fh, err := os.Open(filepath)
+	if err != nil {
+		return UNKNOWN, err
+	}
+	defer fh.Close()
+
+	var buf bytes.Buffer
+	scanner := bufio.NewScanner(fh)
+	for scanner.Scan() {
+		if bytes.HasPrefix(scanner.Bytes(), []byte("package ")) {
+			break
+		}
+		line := bytes.TrimSuffix(bytes.TrimPrefix(bytes.TrimPrefix(scanner.Bytes(),
+			[]byte("//")), []byte("/*")), []byte("*/"))
+		buf.Write(bytes.TrimSpace(line))
+		buf.WriteByte('\n')
+	}
+	l := license.New("", buf.String())
+	l.File = filepath
+	if err = l.GuessType(); err != nil {
+		if err.Error() == license.ErrUnrecognizedLicense {
+			return UNKNOWN, scanner.Err()
+		}
+		return UNKNOWN, err
+	}
+
+	err = scanner.Err()
+	switch l.Type {
+	case license.LicenseMIT:
+		return MIT, err
+	case license.LicenseNewBSD:
+		return NewBSD, err
+	case license.LicenseFreeBSD:
+		return Freebsd, err
+	case license.LicenseApache20:
+		return Apache2, err
+	case license.LicenseMPL20:
+		return MPL2, err
+	case license.LicenseGPL20:
+		return GPL2, err
+	case license.LicenseGPL30:
+		return GPL3, err
+	case license.LicenseLGPL21:
+		return LGPL2, err
+	case license.LicenseLGPL30:
+		return LGPL2, err
+	case license.LicenseCDDL10:
+		return CDDL, err
+	case license.LicenseEPL10:
+		return EPL, err
+	}
+	return UNKNOWN, err
 }
