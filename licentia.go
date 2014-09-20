@@ -148,7 +148,10 @@ type Config struct {
 
 // Dumps license to stdout setting the owner and year in the copyright notice
 func Dump(ltype LicenseType, owner string) (string, error) {
-	replacer := strings.NewReplacer("The licentia Authors", owner, "2014", strconv.Itoa(time.Now().Year()))
+	replacer := strings.NewReplacer(
+		"@@owner@@", owner,
+		"@@year@@", strconv.Itoa(time.Now().Year()),
+	)
 	data, err := Asset(filepath.Join("licenses", string(ltype)))
 	if err != nil {
 		return "", err
@@ -170,7 +173,10 @@ func Set(config *Config) error {
 	errors := new(Error)
 
 	var wg sync.WaitGroup
-	replacer := strings.NewReplacer("The licentia Authors", config.CopyrightOwner, "2014", strconv.Itoa(time.Now().Year()))
+	replacer := strings.NewReplacer(
+		"@@owner@@", config.CopyrightOwner,
+		"@@year@@", strconv.Itoa(time.Now().Year()),
+	)
 
 	removeConfig := *config
 
@@ -181,7 +187,9 @@ func Set(config *Config) error {
 
 			// Detect old license and remove before adding another one.
 			old, err := detectLicense(file)
+			//fmt.Fprintf(os.Stderr, "OLD:%s err=%v\n", old, err)
 			if err == nil && old != UNKNOWN {
+				removeConfig.LicenseType = old
 				removeConfig.Files = file
 				if err = removeLicense(file, &removeConfig); err != nil {
 					errors.Append(fmt.Errorf("remove %q license from %q: %v", old, file, err))
@@ -243,7 +251,7 @@ func removeLicense(filename string, config *Config) error {
 		return nil
 	}
 
-	err = prependEOLComment(lbuffer, config, lheader)
+	err = prependEOLComment(lbuffer, config.EOLCommentStyle, lheader)
 	if err != nil {
 		return err
 	}
@@ -256,7 +264,7 @@ func removeLicense(filename string, config *Config) error {
 
 	scanner := bufio.NewScanner(buf)
 	for scanner.Scan() {
-		if bytes.HasPrefix(scanner.Bytes(), []byte("// Copyright")) {
+		if bytes.HasPrefix(scanner.Bytes(), []byte(config.EOLCommentStyle+" Copyright")) {
 			continue
 		}
 		line := scanner.Text()
@@ -272,7 +280,13 @@ func removeLicense(filename string, config *Config) error {
 
 	unlicensedData := unlicensedFile.String()
 
+	//fmt.Fprintf(os.Stderr, "unl=%q\nlic=%q\n", unlicensedData, license)
 	unlicensedData = strings.Replace(unlicensedData, license, "", -1)
+
+	// Strip multiple empty lines from before package.
+	if i := strings.Index(unlicensedData, "\npackage"); i >= 3 {
+		unlicensedData = strings.TrimRight(unlicensedData[:i], "\n") + unlicensedData[i:]
+	}
 
 	mode := os.FileMode(0640)
 	fi, err := os.Stat(filename)
@@ -288,37 +302,48 @@ func insertLicense(filename string, replacer *strings.Replacer, config *Config) 
 
 	lcopyright, err := Asset(filepath.Join("licenses", string(config.LicenseType)+".copyright"))
 
+	cr := false
 	if err == nil {
-		err = prependEOLComment(licensedFile, config, lcopyright)
+		err = prependEOLComment(licensedFile, config.EOLCommentStyle,
+			[]byte(replacer.Replace(string(lcopyright))))
 		if err != nil {
 			return err
 		}
+		cr = true
 	}
 
 	lheader, err := Asset(filepath.Join("licenses", string(config.LicenseType)+".header"))
 	if err == nil {
-		err := prependEOLComment(licensedFile, config, lheader)
+		plus := ""
+		if cr {
+			plus = "\n"
+		}
+		err := prependEOLComment(licensedFile, config.EOLCommentStyle,
+			[]byte(replacer.Replace(plus+string(lheader))))
 		if err != nil {
 			return err
 		}
 	}
+	// Extra newline for separating license code from package docs.
+	licensedFile.WriteByte('\n')
+
+	// Only use the replacer for the license, not the whole file.
 
 	fh, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
-	defer fh.Close()
-	if _, err = io.Copy(licensedFile, fh); err != nil {
+	_, err = io.Copy(licensedFile, fh)
+	fh.Close()
+	if err != nil {
 		return err
 	}
 
-	filedata := replacer.Replace(licensedFile.String())
-
-	return ioutil.WriteFile(filename, []byte(filedata), 0640)
+	return ioutil.WriteFile(filename, licensedFile.Bytes(), 0640)
 }
 
 // Prepends end-of-line comment to newdata and returns it in licensedFile
-func prependEOLComment(licensedFile *bytes.Buffer, config *Config, newdata []byte) error {
+func prependEOLComment(licensedFile *bytes.Buffer, eol string, newdata []byte) error {
 	if len(newdata) == 0 {
 		return nil
 	}
@@ -328,14 +353,15 @@ func prependEOLComment(licensedFile *bytes.Buffer, config *Config, newdata []byt
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		eol := strings.TrimSpace(config.EOLCommentStyle + " " + line)
-		_, err := licensedFile.WriteString(eol + "\n")
+		eol := strings.TrimSpace(eol + " " + line)
+		_, err := licensedFile.WriteString(eol)
 		if err != nil {
 			return err
 		}
+		if err = licensedFile.WriteByte('\n'); err != nil {
+			return err
+		}
 	}
-	// Extra newline for separating license code from package docs.
-	licensedFile.WriteByte('\n')
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("Scanner error: %v", err)
@@ -415,10 +441,14 @@ func detectLicense(filepath string) (LicenseType, error) {
 		}
 		line := bytes.TrimSuffix(bytes.TrimPrefix(bytes.TrimPrefix(scanner.Bytes(),
 			[]byte("//")), []byte("/*")), []byte("*/"))
+		if len(line) > 0 && (line[0] == '+' || bytes.HasPrefix(bytes.TrimSpace(line), []byte("Copyright"))) {
+			continue
+		}
 		buf.Write(bytes.TrimSpace(line))
 		buf.WriteByte('\n')
 	}
-	l := license.New("", buf.String())
+	//fmt.Fprintf(os.Stderr, "DETECT %q\n", strings.TrimSpace(buf.String()))
+	l := license.New("", strings.TrimSpace(buf.String()))
 	l.File = filepath
 	if err = l.GuessType(); err != nil {
 		if err.Error() == license.ErrUnrecognizedLicense {
