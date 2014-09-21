@@ -25,7 +25,7 @@ func main() {
 	usage := `Licentia.
 
 Usage:
-  licentia set <type> <owner> <files> <eol-comment-style>
+  licentia set [--replace] <type> <owner> <files> <eol-comment-style>
   licentia unset <type> <owner> <files> <eol-comment-style>
   licentia detect <files>
   licentia dump <type> <owner>
@@ -56,7 +56,9 @@ Arguments:
 
 Options:
   -h --help     Show this screen.
-  --version     Show version.`
+  --version     Show version.
+  --replace     Try to replace the old license with the new one in "set".
+`
 
 	args, err := docopt.Parse(usage, nil, true, "Licentia", false)
 	if err != nil {
@@ -69,6 +71,7 @@ Options:
 			CopyrightOwner:  args["<owner>"].(string),
 			EOLCommentStyle: args["<eol-comment-style>"].(string),
 			Files:           args["<files>"].(string),
+			Replace:         args["--replace"].(bool),
 		}
 		err = Set(config)
 	}
@@ -144,6 +147,7 @@ type Config struct {
 	// Style of end-of-line comment that will be used to insert the license.
 	// Ex: //, #, --, !, ', ;
 	EOLCommentStyle string
+	Replace         bool
 }
 
 // Dumps license to stdout setting the owner and year in the copyright notice
@@ -185,14 +189,16 @@ func Set(config *Config) error {
 		go func(file string) {
 			defer wg.Done()
 
-			// Detect old license and remove before adding another one.
-			old, err := detectLicense(file)
-			//fmt.Fprintf(os.Stderr, "OLD:%s err=%v\n", old, err)
-			if err == nil && old != UNKNOWN {
-				removeConfig.LicenseType = old
-				removeConfig.Files = file
-				if err = removeLicense(file, &removeConfig); err != nil {
-					errors.Append(fmt.Errorf("remove %q license from %q: %v", old, file, err))
+			if config.Replace {
+				// Detect old license and remove before adding another one.
+				old, err := detectLicense(file)
+				//fmt.Fprintf(os.Stderr, "OLD:%s err=%v\n", old, err)
+				if err == nil && old != UNKNOWN {
+					removeConfig.LicenseType = old
+					removeConfig.Files = file
+					if err = removeLicense(file, &removeConfig); err != nil {
+						errors.Append(fmt.Errorf("remove %q license from %q: %v", old, file, err))
+					}
 				}
 			}
 
