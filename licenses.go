@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, version 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 package main
 
 import (
@@ -4779,28 +4783,6 @@ func licenses_mpl2() ([]byte, error) {
 	)
 }
 
-func licenses_mpl2_header() ([]byte, error) {
-	return bindata_read([]byte{
-		0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x00, 0xff, 0x3c, 0x8d,
-		0xc1, 0x6a, 0xc3, 0x30, 0x10, 0x44, 0xef, 0xfe, 0x8a, 0xf9, 0x80, 0x22,
-		0x95, 0x1e, 0x7b, 0x2d, 0x14, 0x0a, 0x2e, 0x18, 0x92, 0x4b, 0x8e, 0x92,
-		0xbc, 0x8e, 0x36, 0xc8, 0x5a, 0x23, 0xad, 0x62, 0x92, 0xaf, 0x8f, 0x48,
-		0x20, 0xa7, 0x65, 0x87, 0x99, 0xf7, 0x8e, 0x91, 0x2b, 0x0e, 0xd2, 0x4a,
-		0x20, 0xfc, 0xc8, 0x4c, 0xf8, 0x95, 0xb2, 0xa2, 0x67, 0xb5, 0xf9, 0x0b,
-		0x05, 0x85, 0x0a, 0x34, 0x12, 0x94, 0xca, 0x5a, 0x21, 0xcb, 0xf3, 0xf9,
-		0x97, 0x3b, 0xa7, 0xe4, 0x30, 0x35, 0x9f, 0x38, 0x0c, 0x23, 0x07, 0xca,
-		0x95, 0x3e, 0x70, 0x35, 0xf8, 0x32, 0x9f, 0x06, 0x7f, 0x0b, 0x1c, 0x82,
-		0x6c, 0xb7, 0xf7, 0x60, 0x1a, 0xb1, 0xbb, 0x8a, 0x2c, 0x8a, 0x99, 0xab,
-		0x16, 0xf6, 0x4d, 0x69, 0xc6, 0xce, 0x1a, 0x7b, 0x81, 0xeb, 0xb0, 0x70,
-		0xea, 0x80, 0x93, 0x34, 0x04, 0x97, 0x21, 0x5e, 0x1d, 0xf7, 0x93, 0x09,
-		0x4e, 0x11, 0x55, 0xb7, 0x6f, 0x6b, 0xd7, 0x97, 0xd5, 0x48, 0x39, 0xdb,
-		0x0e, 0xb4, 0x5d, 0x65, 0xcd, 0xf0, 0x08, 0x00, 0x00, 0xff, 0xff, 0x45,
-		0x31, 0xfe, 0xb9, 0xc1, 0x00, 0x00, 0x00,
-	},
-		"licenses/mpl2.header",
-	)
-}
-
 func licenses_newbsd() ([]byte, error) {
 	return bindata_read([]byte{
 		0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x00, 0xff, 0x94, 0x52,
@@ -5057,6 +5039,28 @@ func licenses_unlicense_header() ([]byte, error) {
 	)
 }
 
+func licenses_mpl2_header() ([]byte, error) {
+	return bindata_read([]byte{
+		0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x00, 0xff, 0x3c, 0x8d,
+		0xc1, 0x4a, 0xc5, 0x30, 0x10, 0x45, 0xf7, 0xfd, 0x8a, 0xfb, 0x01, 0x92,
+		0x88, 0x4b, 0xb7, 0x82, 0x20, 0x54, 0x28, 0xe8, 0xc6, 0x65, 0x92, 0x4e,
+		0xcd, 0x48, 0x9a, 0x29, 0x99, 0x89, 0x45, 0xbf, 0xfe, 0x85, 0xf7, 0xe0,
+		0xad, 0x86, 0xb9, 0xdc, 0x7b, 0xce, 0x67, 0x66, 0xc5, 0x87, 0xf4, 0x96,
+		0x08, 0x2f, 0xb2, 0x12, 0x5e, 0xa5, 0xed, 0x18, 0x99, 0xf6, 0xf8, 0x43,
+		0xc9, 0x60, 0x02, 0xcb, 0x04, 0xa3, 0xb6, 0x2b, 0x64, 0xbb, 0x3e, 0xef,
+		0xf2, 0xcf, 0xa5, 0x04, 0x2c, 0x3d, 0x16, 0x4e, 0xd3, 0xcc, 0x89, 0xaa,
+		0xd2, 0x03, 0x7e, 0xa9, 0x29, 0x4b, 0xc5, 0x93, 0x7b, 0x74, 0x78, 0xdb,
+		0x10, 0x90, 0xe4, 0xf8, 0xbb, 0xaf, 0x96, 0x19, 0x67, 0x50, 0x54, 0x31,
+		0xac, 0xac, 0xd6, 0x38, 0x76, 0xa3, 0x15, 0x27, 0x5b, 0x1e, 0x05, 0xd6,
+		0x69, 0xe3, 0x32, 0x28, 0x5f, 0xd2, 0x91, 0x42, 0x85, 0x44, 0x0b, 0x3c,
+		0x4e, 0x25, 0x04, 0x43, 0x36, 0x3b, 0x9e, 0xbd, 0xdf, 0x6f, 0x6a, 0x27,
+		0xed, 0xdb, 0x0f, 0xa0, 0x1f, 0x2a, 0xef, 0xa6, 0x4b, 0x00, 0x00, 0x00,
+		0xff, 0xff, 0x5e, 0xdf, 0x52, 0xb0, 0xc6, 0x00, 0x00, 0x00,
+	},
+		"licenses/mpl2.header",
+	)
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -5079,39 +5083,40 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() ([]byte, error){
-	"licenses/apache2": licenses_apache2,
-	"licenses/apache2.copyright": licenses_apache2_copyright,
-	"licenses/apache2.header": licenses_apache2_header,
-	"licenses/cddl": licenses_cddl,
-	"licenses/cddl.header": licenses_cddl_header,
-	"licenses/epl": licenses_epl,
-	"licenses/epl.copyright": licenses_epl_copyright,
-	"licenses/epl.header": licenses_epl_header,
-	"licenses/freebsd": licenses_freebsd,
-	"licenses/freebsd.copyright": licenses_freebsd_copyright,
-	"licenses/freebsd.header": licenses_freebsd_header,
-	"licenses/gpl2": licenses_gpl2,
-	"licenses/gpl2.copyright": licenses_gpl2_copyright,
-	"licenses/gpl2.header": licenses_gpl2_header,
-	"licenses/gpl3": licenses_gpl3,
-	"licenses/gpl3.copyright": licenses_gpl3_copyright,
-	"licenses/gpl3.header": licenses_gpl3_header,
-	"licenses/lgpl2": licenses_lgpl2,
-	"licenses/lgpl2.copyright": licenses_lgpl2_copyright,
-	"licenses/lgpl2.header": licenses_lgpl2_header,
-	"licenses/lgpl3": licenses_lgpl3,
-	"licenses/mit": licenses_mit,
-	"licenses/mit.copyright": licenses_mit_copyright,
-	"licenses/mit.header": licenses_mit_header,
-	"licenses/mpl2": licenses_mpl2,
-	"licenses/mpl2.header": licenses_mpl2_header,
-	"licenses/newbsd": licenses_newbsd,
-	"licenses/newbsd.copyright": licenses_newbsd_copyright,
-	"licenses/newbsd.header": licenses_newbsd_header,
-	"licenses/unlicense": licenses_unlicense,
+	"licenses/apache2":             licenses_apache2,
+	"licenses/apache2.copyright":   licenses_apache2_copyright,
+	"licenses/apache2.header":      licenses_apache2_header,
+	"licenses/cddl":                licenses_cddl,
+	"licenses/cddl.header":         licenses_cddl_header,
+	"licenses/epl":                 licenses_epl,
+	"licenses/epl.copyright":       licenses_epl_copyright,
+	"licenses/epl.header":          licenses_epl_header,
+	"licenses/freebsd":             licenses_freebsd,
+	"licenses/freebsd.copyright":   licenses_freebsd_copyright,
+	"licenses/freebsd.header":      licenses_freebsd_header,
+	"licenses/gpl2":                licenses_gpl2,
+	"licenses/gpl2.copyright":      licenses_gpl2_copyright,
+	"licenses/gpl2.header":         licenses_gpl2_header,
+	"licenses/gpl3":                licenses_gpl3,
+	"licenses/gpl3.copyright":      licenses_gpl3_copyright,
+	"licenses/gpl3.header":         licenses_gpl3_header,
+	"licenses/lgpl2":               licenses_lgpl2,
+	"licenses/lgpl2.copyright":     licenses_lgpl2_copyright,
+	"licenses/lgpl2.header":        licenses_lgpl2_header,
+	"licenses/lgpl3":               licenses_lgpl3,
+	"licenses/mit":                 licenses_mit,
+	"licenses/mit.copyright":       licenses_mit_copyright,
+	"licenses/mit.header":          licenses_mit_header,
+	"licenses/mpl2":                licenses_mpl2,
+	"licenses/newbsd":              licenses_newbsd,
+	"licenses/newbsd.copyright":    licenses_newbsd_copyright,
+	"licenses/newbsd.header":       licenses_newbsd_header,
+	"licenses/unlicense":           licenses_unlicense,
 	"licenses/unlicense.copyright": licenses_unlicense_copyright,
-	"licenses/unlicense.header": licenses_unlicense_header,
+	"licenses/unlicense.header":    licenses_unlicense_header,
+	"licenses/mpl2.header":         licenses_mpl2_header,
 }
+
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
@@ -5148,74 +5153,43 @@ func AssetDir(name string) ([]string, error) {
 }
 
 type _bintree_t struct {
-	Func func() ([]byte, error)
+	Func     func() ([]byte, error)
 	Children map[string]*_bintree_t
 }
+
 var _bintree = &_bintree_t{nil, map[string]*_bintree_t{
 	"licenses": &_bintree_t{nil, map[string]*_bintree_t{
-		"epl.copyright": &_bintree_t{licenses_epl_copyright, map[string]*_bintree_t{
-		}},
-		"gpl2.header": &_bintree_t{licenses_gpl2_header, map[string]*_bintree_t{
-		}},
-		"lgpl2.header": &_bintree_t{licenses_lgpl2_header, map[string]*_bintree_t{
-		}},
-		"cddl": &_bintree_t{licenses_cddl, map[string]*_bintree_t{
-		}},
-		"unlicense": &_bintree_t{licenses_unlicense, map[string]*_bintree_t{
-		}},
-		"lgpl2": &_bintree_t{licenses_lgpl2, map[string]*_bintree_t{
-		}},
-		"freebsd": &_bintree_t{licenses_freebsd, map[string]*_bintree_t{
-		}},
-		"freebsd.header": &_bintree_t{licenses_freebsd_header, map[string]*_bintree_t{
-		}},
-		"gpl3.copyright": &_bintree_t{licenses_gpl3_copyright, map[string]*_bintree_t{
-		}},
-		"mpl2": &_bintree_t{licenses_mpl2, map[string]*_bintree_t{
-		}},
-		"apache2.header": &_bintree_t{licenses_apache2_header, map[string]*_bintree_t{
-		}},
-		"epl.header": &_bintree_t{licenses_epl_header, map[string]*_bintree_t{
-		}},
-		"freebsd.copyright": &_bintree_t{licenses_freebsd_copyright, map[string]*_bintree_t{
-		}},
-		"gpl3.header": &_bintree_t{licenses_gpl3_header, map[string]*_bintree_t{
-		}},
-		"lgpl2.copyright": &_bintree_t{licenses_lgpl2_copyright, map[string]*_bintree_t{
-		}},
-		"mit": &_bintree_t{licenses_mit, map[string]*_bintree_t{
-		}},
-		"cddl.header": &_bintree_t{licenses_cddl_header, map[string]*_bintree_t{
-		}},
-		"gpl2.copyright": &_bintree_t{licenses_gpl2_copyright, map[string]*_bintree_t{
-		}},
-		"newbsd": &_bintree_t{licenses_newbsd, map[string]*_bintree_t{
-		}},
-		"unlicense.header": &_bintree_t{licenses_unlicense_header, map[string]*_bintree_t{
-		}},
-		"apache2": &_bintree_t{licenses_apache2, map[string]*_bintree_t{
-		}},
-		"epl": &_bintree_t{licenses_epl, map[string]*_bintree_t{
-		}},
-		"gpl2": &_bintree_t{licenses_gpl2, map[string]*_bintree_t{
-		}},
-		"lgpl3": &_bintree_t{licenses_lgpl3, map[string]*_bintree_t{
-		}},
-		"unlicense.copyright": &_bintree_t{licenses_unlicense_copyright, map[string]*_bintree_t{
-		}},
-		"apache2.copyright": &_bintree_t{licenses_apache2_copyright, map[string]*_bintree_t{
-		}},
-		"mit.header": &_bintree_t{licenses_mit_header, map[string]*_bintree_t{
-		}},
-		"mpl2.header": &_bintree_t{licenses_mpl2_header, map[string]*_bintree_t{
-		}},
-		"newbsd.header": &_bintree_t{licenses_newbsd_header, map[string]*_bintree_t{
-		}},
-		"mit.copyright": &_bintree_t{licenses_mit_copyright, map[string]*_bintree_t{
-		}},
-		"newbsd.copyright": &_bintree_t{licenses_newbsd_copyright, map[string]*_bintree_t{
-		}},
-		"gpl3": &_bintree_t{licenses_gpl3, map[string]*_bintree_t{
-		}},
+		"apache2.header":      &_bintree_t{licenses_apache2_header, map[string]*_bintree_t{}},
+		"cddl":                &_bintree_t{licenses_cddl, map[string]*_bintree_t{}},
+		"lgpl2.copyright":     &_bintree_t{licenses_lgpl2_copyright, map[string]*_bintree_t{}},
+		"mit":                 &_bintree_t{licenses_mit, map[string]*_bintree_t{}},
+		"mit.header":          &_bintree_t{licenses_mit_header, map[string]*_bintree_t{}},
+		"newbsd.copyright":    &_bintree_t{licenses_newbsd_copyright, map[string]*_bintree_t{}},
+		"apache2.copyright":   &_bintree_t{licenses_apache2_copyright, map[string]*_bintree_t{}},
+		"gpl3.header":         &_bintree_t{licenses_gpl3_header, map[string]*_bintree_t{}},
+		"lgpl3":               &_bintree_t{licenses_lgpl3, map[string]*_bintree_t{}},
+		"gpl3.copyright":      &_bintree_t{licenses_gpl3_copyright, map[string]*_bintree_t{}},
+		"lgpl2":               &_bintree_t{licenses_lgpl2, map[string]*_bintree_t{}},
+		"unlicense.header":    &_bintree_t{licenses_unlicense_header, map[string]*_bintree_t{}},
+		"mpl2.header":         &_bintree_t{licenses_mpl2_header, map[string]*_bintree_t{}},
+		"freebsd":             &_bintree_t{licenses_freebsd, map[string]*_bintree_t{}},
+		"lgpl2.header":        &_bintree_t{licenses_lgpl2_header, map[string]*_bintree_t{}},
+		"unlicense":           &_bintree_t{licenses_unlicense, map[string]*_bintree_t{}},
+		"gpl2":                &_bintree_t{licenses_gpl2, map[string]*_bintree_t{}},
+		"newbsd":              &_bintree_t{licenses_newbsd, map[string]*_bintree_t{}},
+		"epl.copyright":       &_bintree_t{licenses_epl_copyright, map[string]*_bintree_t{}},
+		"epl.header":          &_bintree_t{licenses_epl_header, map[string]*_bintree_t{}},
+		"freebsd.copyright":   &_bintree_t{licenses_freebsd_copyright, map[string]*_bintree_t{}},
+		"freebsd.header":      &_bintree_t{licenses_freebsd_header, map[string]*_bintree_t{}},
+		"gpl2.copyright":      &_bintree_t{licenses_gpl2_copyright, map[string]*_bintree_t{}},
+		"gpl3":                &_bintree_t{licenses_gpl3, map[string]*_bintree_t{}},
+		"mit.copyright":       &_bintree_t{licenses_mit_copyright, map[string]*_bintree_t{}},
+		"mpl2":                &_bintree_t{licenses_mpl2, map[string]*_bintree_t{}},
+		"newbsd.header":       &_bintree_t{licenses_newbsd_header, map[string]*_bintree_t{}},
+		"apache2":             &_bintree_t{licenses_apache2, map[string]*_bintree_t{}},
+		"cddl.header":         &_bintree_t{licenses_cddl_header, map[string]*_bintree_t{}},
+		"epl":                 &_bintree_t{licenses_epl, map[string]*_bintree_t{}},
+		"gpl2.header":         &_bintree_t{licenses_gpl2_header, map[string]*_bintree_t{}},
+		"unlicense.copyright": &_bintree_t{licenses_unlicense_copyright, map[string]*_bintree_t{}},
 	}},
 }}

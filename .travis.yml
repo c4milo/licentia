@@ -7,3 +7,4 @@ go:
 
 install:
   - go get github.com/docopt/docopt-go
+  - go get github.com/ryanuber/go-license
