@@ -1,0 +1,15 @@
+{
+	"ImportPath": "github.com/c4milo/licentia",
+	"GoVersion": "go1.3.3",
+	"Deps": [
+		{
+			"ImportPath": "github.com/docopt/docopt-go",
+			"Comment": "0.6.1-rc2-24-g7fb3e64",
+			"Rev": "7fb3e64728058525f5940d913d0b854474dcd66a"
+		},
+		{
+			"ImportPath": "github.com/ryanuber/go-license",
+			"Rev": "ab6daaeff70943343cb875ef937267a39aec42cf"
+		}
+	]
+}
