@@ -1,4 +1,5 @@
 # Licentia
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/c4milo/licentia?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GoDoc](https://godoc.org/github.com/c4milo/licentia?status.svg)](https://godoc.org/github.com/c4milo/licentia)
 [![Build Status](https://travis-ci.org/c4milo/licentia.svg?branch=master)](https://travis-ci.org/c4milo/licentia)
 
