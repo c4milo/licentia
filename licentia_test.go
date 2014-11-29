@@ -31,7 +31,7 @@ func TestSetUnset(t *testing.T) {
 	config := &Config{
 		CopyrightOwner:  "Test",
 		LicenseType:     MPL2,
-		Files:           filepath,
+		Files:           []string{filepath},
 		EOLCommentStyle: "//",
 	}
 
