@@ -21,6 +21,8 @@ import (
 	"github.com/ryanuber/go-license"
 )
 
+var Version string
+
 func main() {
 	usage := `Licentia.
 
@@ -60,7 +62,7 @@ Options:
   --replace     Try to replace the old license with the new one in "set".
 `
 
-	args, err := docopt.Parse(usage, nil, true, "Licentia", false)
+	args, err := docopt.Parse(usage, nil, true, Version, false)
 	if err != nil {
 		panic(err)
 	}
