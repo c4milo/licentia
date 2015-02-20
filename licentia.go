@@ -27,9 +27,9 @@ func main() {
 	usage := `Licentia.
 
 Usage:
-  licentia set [--replace] <type> <owner> <files> <eol-comment-style>
-  licentia unset <type> <owner> <files> <eol-comment-style>
-  licentia detect <files>
+  licentia set [--replace] <type> <owner> <eol-comment-style> <files>...
+  licentia unset <type> <owner> <eol-comment-style> <files>...
+  licentia detect <files>...
   licentia dump <type> <owner>
   licentia list
   licentia -h | --help
@@ -67,25 +67,30 @@ Options:
 		panic(err)
 	}
 
+	var files []string
 	if val, ok := args["set"]; ok && val.(bool) {
-		config := &Config{
-			LicenseType:     LicenseType(args["<type>"].(string)),
-			CopyrightOwner:  args["<owner>"].(string),
-			EOLCommentStyle: args["<eol-comment-style>"].(string),
-			Files:           args["<files>"].(string),
-			Replace:         args["--replace"].(bool),
+		if files, err = globFiles(args["<files>"].([]string)); err == nil {
+			config := &Config{
+				LicenseType:     LicenseType(args["<type>"].(string)),
+				CopyrightOwner:  args["<owner>"].(string),
+				EOLCommentStyle: args["<eol-comment-style>"].(string),
+				Files:           files,
+				Replace:         args["--replace"].(bool),
+			}
+			err = Set(config)
 		}
-		err = Set(config)
 	}
 
 	if val, ok := args["unset"]; ok && val.(bool) {
-		config := &Config{
-			LicenseType:     LicenseType(args["<type>"].(string)),
-			CopyrightOwner:  args["<owner>"].(string),
-			EOLCommentStyle: args["<eol-comment-style>"].(string),
-			Files:           args["<files>"].(string),
+		if files, err = globFiles(args["<files>"].([]string)); err == nil {
+			config := &Config{
+				LicenseType:     LicenseType(args["<type>"].(string)),
+				CopyrightOwner:  args["<owner>"].(string),
+				EOLCommentStyle: args["<eol-comment-style>"].(string),
+				Files:           files,
+			}
+			err = Unset(config)
 		}
-		err = Unset(config)
 	}
 
 	if val, ok := args["list"]; ok && val.(bool) {
@@ -105,13 +110,13 @@ Options:
 	}
 
 	if val, ok := args["detect"]; ok && val.(bool) {
-		config := &Config{
-			Files: args["<files>"].(string),
-		}
-		var types []fileLicense
-		types, err = Detect(config)
-		for _, elt := range types {
-			fmt.Printf("%s:\t%s\n", elt.file, elt.license)
+		if files, err = globFiles(args["<files>"].([]string)); err == nil {
+			config := &Config{Files: files}
+			var types []fileLicense
+			types, err = Detect(config)
+			for _, elt := range types {
+				fmt.Printf("%s:\t%s\n", elt.file, elt.license)
+			}
 		}
 	}
 
@@ -145,11 +150,23 @@ type Config struct {
 	// License type
 	LicenseType LicenseType
 	// Invidiviual file or folder as well as glob patterns are recognized
-	Files string
+	Files []string
 	// Style of end-of-line comment that will be used to insert the license.
 	// Ex: //, #, --, !, ', ;
 	EOLCommentStyle string
 	Replace         bool
+}
+
+func globFiles(args []string) ([]string, error) {
+	files := make([]string, 0, len(args)+1)
+	for _, arg := range args {
+		f, err := filepath.Glob(arg)
+		if err != nil {
+			return files, err
+		}
+		files = append(files, f...)
+	}
+	return files, nil
 }
 
 // Dumps license to stdout setting the owner and year in the copyright notice
@@ -171,11 +188,6 @@ func Dump(ltype LicenseType, owner string) (string, error) {
 
 // Sets license
 func Set(config *Config) error {
-	files, err := filepath.Glob(config.Files)
-	if err != nil {
-		return err
-	}
-
 	errors := new(Error)
 
 	var wg sync.WaitGroup
@@ -186,7 +198,7 @@ func Set(config *Config) error {
 
 	removeConfig := *config
 
-	for _, file := range files {
+	for _, file := range config.Files {
 		wg.Add(1)
 		go func(file string) {
 			defer wg.Done()
@@ -197,15 +209,14 @@ func Set(config *Config) error {
 				//fmt.Fprintf(os.Stderr, "OLD:%s err=%v\n", old, err)
 				if err == nil && old != UNKNOWN {
 					removeConfig.LicenseType = old
-					removeConfig.Files = file
+					removeConfig.Files = []string{file}
 					if err = removeLicense(file, &removeConfig); err != nil {
 						errors.Append(fmt.Errorf("remove %q license from %q: %v", old, file, err))
 					}
 				}
 			}
 
-			err = insertLicense(file, replacer, config)
-			if err != nil {
+			if err := insertLicense(file, replacer, config); err != nil {
 				errors.Append(err)
 			}
 		}(file)
@@ -221,21 +232,15 @@ func Set(config *Config) error {
 
 // Removes license
 func Unset(config *Config) error {
-	files, err := filepath.Glob(config.Files)
-	if err != nil {
-		return err
-	}
-
 	errors := new(Error)
 
 	var wg sync.WaitGroup
-	for _, file := range files {
+	for _, file := range config.Files {
 		wg.Add(1)
 		go func(file string) {
 			defer wg.Done()
 
-			err = removeLicense(file, config)
-			if err != nil {
+			if err := removeLicense(file, config); err != nil {
 				errors.Append(err)
 			}
 		}(file)
@@ -401,17 +406,12 @@ type fileLicense struct {
 
 // Detect the licenses.
 func Detect(config *Config) ([]fileLicense, error) {
-	files, err := filepath.Glob(config.Files)
-	if err != nil {
-		return nil, err
-	}
-
 	var typesMtx sync.Mutex
-	types := make([]fileLicense, 0, len(files))
+	types := make([]fileLicense, 0, len(config.Files))
 	errors := new(Error)
 
 	var wg sync.WaitGroup
-	for _, file := range files {
+	for _, file := range config.Files {
 		wg.Add(1)
 		go func(file string) {
 			defer wg.Done()
