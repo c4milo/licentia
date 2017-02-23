@@ -459,7 +459,7 @@ func detectLicense(filepath string) (LicenseType, error) {
 	l := license.New("", strings.TrimSpace(buf.String()))
 	l.File = filepath
 	if err = l.GuessType(); err != nil {
-		if err.Error() == license.ErrUnrecognizedLicense {
+		if err == license.ErrUnrecognizedLicense {
 			return UNKNOWN, scanner.Err()
 		}
 		return UNKNOWN, err

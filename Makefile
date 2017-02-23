@@ -2,11 +2,11 @@ NAME := licentia
 VERSION := v1.0.1
 
 build:
-	go build -ldflags "-X main.Version $(VERSION)"
+	go build -ldflags "-X main.Version=$(VERSION)"
 
 compile:
 	@rm -rf build/
-	@gox -ldflags "-X main.Version $(VERSION)" \
+	@gox -ldflags "-X main.Version=$(VERSION)" \
 	-os="darwin" \
 	-os="linux" \
 	-os="windows" \
@@ -15,7 +15,7 @@ compile:
 	./...
 
 install:
-	go install -ldflags "-X main.Version $(VERSION)"
+	go install -ldflags "-X main.Version=$(VERSION)"
 
 deps:
 	go get github.com/c4milo/github-release
