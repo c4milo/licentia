@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -19,9 +20,16 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"github.com/ryanuber/go-license"
+
+	_ "github.com/c4milo/licentia/statik"
+	"github.com/rakyll/statik/fs"
 )
 
+//go:generate go get github.com/rakyll/statik
+//go:generate statik -f -src licenses
+
 var Version string
+var statikFS http.FileSystem
 
 func main() {
 	usage := `Licentia.
@@ -64,6 +72,10 @@ Options:
 
 	args, err := docopt.Parse(usage, nil, true, Version, false)
 	if err != nil {
+		panic(err)
+	}
+
+	if statikFS, err = fs.New(); err != nil {
 		panic(err)
 	}
 
@@ -491,4 +503,37 @@ func detectLicense(filepath string) (LicenseType, error) {
 		return EPL, err
 	}
 	return UNKNOWN, err
+}
+
+func assetPath(path string) string {
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	path = strings.TrimPrefix(path, "/licenses")
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	return path
+}
+func Asset(path string) ([]byte, error) {
+	fh, err := statikFS.Open(assetPath(path))
+	if err != nil {
+		return nil, err
+	}
+	defer fh.Close()
+	return ioutil.ReadAll(fh)
+}
+
+func AssetDir(path string) ([]string, error) {
+	dh, err := statikFS.Open(assetPath(path))
+	if err != nil {
+		return nil, err
+	}
+	defer dh.Close()
+	fis, err := dh.Readdir(-1)
+	names := make([]string, len(fis))
+	for i, fi := range fis {
+		names[i] = fi.Name()
+	}
+	return names, err
 }
